@@ -27,8 +27,8 @@ import GitHubIcon from '@mui/icons-material/GitHub'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
-import { WalletClient } from '@bsv/sdk'
-import { createToken, queryTokens, HelloWorldToken } from 'hello-tokens'
+import { LookupResolver, WalletClient } from '@bsv/sdk'
+import { createToken, queryTokens, HelloWorldToken } from './hello-tokens'
 
 const Root = styled('div')({})
 const AppBarSpacer = styled('div')({ height: '4em' })
@@ -67,6 +67,9 @@ const HelloWorldApp: React.FC = () => {
   const [endDate, setEndDate] = useState('')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
 
+  const resolver = new LookupResolver({
+    networkPreset: 'local',
+  })
   const wallet = new WalletClient()
 
   const resetPagination = () => {
@@ -93,7 +96,7 @@ const HelloWorldApp: React.FC = () => {
       if (reset) resetPagination()
       setLoading(true)
       try {
-        const tokens: HelloWorldToken[] = await queryTokens(buildQueryParams(), { wallet })
+        const tokens: HelloWorldToken[] = await queryTokens(buildQueryParams(), { resolver })
 
         setMessages(prev => (reset ? tokens : [...prev, ...tokens]))
         if (tokens.length < PAGE_LIMIT) setHasMore(false)
@@ -114,9 +117,14 @@ const HelloWorldApp: React.FC = () => {
       toast.error('Enter a message to broadcast!')
       return
     }
+    if (createMessage.trim().length < 2) {
+      toast.error('Message must be at least 2 characters long!')
+      return
+    }
     try {
       setCreateLoading(true)
-      await createToken(createMessage.trim())
+      const res = await createToken(createMessage.trim(), wallet)
+      console.log('Broadcast result:', res)
       toast.success('Message broadcasted!')
       setCreateMessage('')
       setCreateOpen(false)

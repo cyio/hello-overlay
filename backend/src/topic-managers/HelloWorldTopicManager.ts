@@ -43,21 +43,24 @@ export default class HelloWorldTopicManager implements TopicManager {
           if (!result.fields || result.fields.length !== 1) continue
 
           const message = Utils.toUTF8(result.fields[0])
+          console.log(`HelloWorld topic manager: found valid message "${message}" in output ${index}`)
+
           // 2) Message must be at least two characters
           if (message.length < 2) continue
 
           // 3) Verify the signature against the locking public key
           if (!result.lockingPublicKey || !signature) continue
 
-          const data = result.fields.reduce((a, e) => [...a, ...e], [])
           const hasValidSignature = await result.lockingPublicKey.verify(
-            data,
+            message,
             Signature.fromDER(signature)
           )
           if (!hasValidSignature) throw new Error('Invalid signature!')
           outputsToAdmit.push(index)
         } catch (err) {
-          console.error(`Error processing output ${index}:`, err)
+          if (index !== 1) {
+            console.error(`Error processing output ${index}:`, err)
+          }
           // Continue with next output
         }
       }

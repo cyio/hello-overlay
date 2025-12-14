@@ -40,7 +40,7 @@ export class HelloWorldLookupService implements LookupService {
   async outputAdmittedByTopic(payload: OutputAdmittedByTopic): Promise<void> {
     if (payload.mode !== 'locking-script') throw new Error('Invalid mode')
     const { topic, lockingScript, txid, outputIndex } = payload
-    if (payload.topic !== 'tm_helloworld') throw new Error(`Invalid topic "${topic}" for this service.`)
+    if (payload.topic !== 'tm_helloworld_bitspv') throw new Error(`Invalid topic "${topic}" for this service.`)
 
     try {
       // Decode the PushDrop token
@@ -64,7 +64,7 @@ export class HelloWorldLookupService implements LookupService {
   async outputSpent(payload: OutputSpent): Promise<void> {
     if (payload.mode !== 'none') throw new Error('Invalid mode')
     const { topic, txid, outputIndex } = payload
-    if (topic !== 'tm_helloworld') throw new Error(`Invalid topic "${topic}" for this service.`)
+    if (topic !== 'tm_helloworld_bitspv') throw new Error(`Invalid topic "${topic}" for this service.`)
     await this.storage.deleteRecord(txid, outputIndex)
   }
 
@@ -82,9 +82,9 @@ export class HelloWorldLookupService implements LookupService {
    * @param question - The lookup question to be answered
    * @returns A promise that resolves to a lookup answer or formula
    */
-  async lookup(question: LookupQuestion): Promise<LookupAnswer | LookupFormula> {
+  async lookup(question: LookupQuestion): Promise<LookupFormula> {
     if (!question) throw new Error('A valid query must be provided!')
-    if (question.service !== 'ls_helloworld') throw new Error('Lookup service not supported!')
+    if (question.service !== 'ls_helloworld_bitspv') throw new Error('Lookup service not supported!')
 
     const {
       message,
